@@ -1,0 +1,13 @@
+{
+  "name": "fish-prawn-crab",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {},
+  "dependencies": {
+    "react-router-dom": "^7.13.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.1"
+  }
+}

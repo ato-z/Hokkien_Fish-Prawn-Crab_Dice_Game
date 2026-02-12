@@ -1,0 +1,12 @@
+body {
+  @apply bg-body text-white;
+}
+
+@theme {
+  /** 主题颜色 */
+  --color-body: #0f172a; /*深邃的墨色 */
+  --color-brand: #450a0a; /* 主题色 */
+  /** 强调色：财富与运气 */
+  --color-brand-strong: #fbbf24; /* 流光金 */
+  --color-brand-strong-100: #ef4444; /* 霓虹赤 */
+}
