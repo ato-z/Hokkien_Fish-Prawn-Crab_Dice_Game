@@ -15,6 +15,9 @@ import {
 } from 'lucide-react'
 import { GameBoard } from '@/components/ui/GameBoard'
 import { SettingsModal } from '@/components/ui/SettingsModal'
+import { HearthstoneSpinner } from '@/helper/HearthstoneSpinner'
+import sidesPath from '@/assets/sides.webp'
+import spinPath from '@/assets/spin.mp3'
 
 // --- 常量 ---
 type SymbolType = 'fish' | 'prawn' | 'crab' | 'rooster' | 'gourd' | 'coin'
@@ -37,8 +40,14 @@ const MOCK_CHAT = [
 // --- 主页面 ---
 export function GamePage() {
   const navigate = useNavigate()
-  const { id } = useParams()
-  console.log('room id', id)
+  const { roomId } = useParams()
+  const gameController = HearthstoneSpinner.getInstance(roomId ?? '1', {
+    column: 3,
+    sidesPath: sidesPath,
+    sideNumber: 6,
+    audioPath: spinPath,
+  })
+  console.log('room id', roomId)
 
   // 状态管理
   const [isDealer] = useState(true)
@@ -71,6 +80,11 @@ export function GamePage() {
     if (gameState !== 'betting') return
     setGameState('rolling')
     setDiceResult(null)
+    const targets = Array.from({ length: 3 }, () => Math.floor(Math.random() * 6))
+    gameController.runTo({
+      column: targets,
+      duration: 3000,
+    })
     setTimeout(() => {
       const result: SymbolType[] = []
       for (let i = 0; i < 3; i++) result.push(SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)].id)
@@ -134,7 +148,7 @@ export function GamePage() {
       <main className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-6 p-0 lg:p-6 max-w-400 mx-auto w-full relative z-0">
         {/* Left: Game Board */}
         <section className="lg:col-span-7 flex flex-col p-2 lg:p-0">
-          <GameBoard diceResult={diceResult} isRolling={gameState === 'rolling'} />
+          <GameBoard gameController={gameController} diceResult={diceResult} isRolling={gameState === 'rolling'} />
         </section>
 
         {/* Right: Panel */}
