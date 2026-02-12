@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Coins, Users, Lock, Unlock, Type, Tag, Sparkles, Banknote, KeyRound } from 'lucide-react'
 import { BackgroundCommon } from '@/components/ui/Background'
-import { cn } from '@/lib/utils'
 
 export function CreateRoomPage() {
   const navigate = useNavigate()
@@ -98,14 +97,13 @@ export function CreateRoomPage() {
                 </div>
                 {/* Tag 显示 */}
                 <span
-                  className={cn(
-                    'text-[10px] px-2 py-0.5 rounded text-right whitespace-nowrap transition-colors font-bold',
+                  className={`text-[10px] px-2 py-0.5 rounded text-right whitespace-nowrap transition-colors font-bold ${
                     (formData.minBet || 0) === 0
-                      ? 'text-slate-900 bg-emerald-400' // 无料样式
+                      ? 'text-slate-900 bg-emerald-400'
                       : (formData.minBet || 0) > 100
                         ? 'text-red-400 bg-red-950/30'
                         : 'text-emerald-400 bg-emerald-950/30'
-                  )}>
+                  }`}>
                   {formData.tag}
                 </span>
               </div>
@@ -171,10 +169,9 @@ export function CreateRoomPage() {
                   <Coins size={14} /> 入场门票 (Min Bet)
                 </label>
                 <span
-                  className={cn(
-                    'font-mono font-bold transition-colors',
+                  className={`font-mono font-bold transition-colors ${
                     (formData.minBet || 0) === 0 ? 'text-emerald-400' : 'text-emerald-400'
-                  )}>
+                  }`}>
                   {(formData.minBet || 0) === 0 ? '无料 (免费)' : `¥ ${formData.minBet}`}
                 </span>
               </div>
@@ -209,12 +206,11 @@ export function CreateRoomPage() {
                     key={num}
                     type="button"
                     onClick={() => setFormData({ ...formData, maxPlayers: num })}
-                    className={cn(
-                      'flex-1 min-w-12.5 py-2 rounded-lg text-xs font-medium border transition-all',
+                    className={`flex-1 min-w-12.5 py-2 rounded-lg text-xs font-medium border transition-all ${
                       formData.maxPlayers === num
                         ? 'bg-emerald-950 border-emerald-500/50 text-emerald-400'
                         : 'bg-slate-800 border-transparent text-slate-500 hover:bg-slate-700'
-                    )}>
+                    }`}>
                     {num}人
                   </button>
                 ))}
@@ -225,24 +221,21 @@ export function CreateRoomPage() {
           <div className="space-y-3">
             <div
               onClick={() => setFormData({ ...formData, private: !formData.private })}
-              className={cn(
-                'flex items-center justify-between border rounded-xl p-4 cursor-pointer active:scale-[0.99] transition-all duration-300',
+              className={`flex items-center justify-between border rounded-xl p-4 cursor-pointer active:scale-[0.99] transition-all duration-300 ${
                 formData.private ? 'bg-amber-950/20 border-amber-500/30' : 'bg-slate-900/30 border-white/5'
-              )}>
+              }`}>
               <div className="flex items-center gap-3">
                 <div
-                  className={cn(
-                    'p-2 rounded-full transition-colors',
+                  className={`p-2 rounded-full transition-colors ${
                     formData.private ? 'bg-amber-900/20 text-amber-500' : 'bg-slate-800 text-slate-500'
-                  )}>
+                  }`}>
                   {formData.private ? <Lock size={18} /> : <Unlock size={18} />}
                 </div>
                 <div className="flex flex-col">
                   <span
-                    className={cn(
-                      'text-sm font-bold transition-colors',
+                    className={`text-sm font-bold transition-colors ${
                       formData.private ? 'text-amber-500' : 'text-slate-300'
-                    )}>
+                    }`}>
                     {formData.private ? '内幕交易 (私密)' : '公开市场 (公开)'}
                   </span>
                   <span className="text-[10px] text-slate-500">
@@ -251,15 +244,13 @@ export function CreateRoomPage() {
                 </div>
               </div>
               <div
-                className={cn(
-                  'w-10 h-5 rounded-full relative transition-colors',
+                className={`w-10 h-5 rounded-full relative transition-colors ${
                   formData.private ? 'bg-amber-600' : 'bg-slate-700'
-                )}>
+                }`}>
                 <div
-                  className={cn(
-                    'absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300',
+                  className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300 ${
                     formData.private ? 'left-6' : 'left-1'
-                  )}
+                  }`}
                 />
               </div>
             </div>

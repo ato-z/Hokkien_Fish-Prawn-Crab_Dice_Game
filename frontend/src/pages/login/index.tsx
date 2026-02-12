@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Eye, EyeOff, Lock, Dices, ChevronRight, Hash, Smile } from 'lucide-react'
 import { BackgroundCommon } from '@/components/ui/Background'
-import { cn } from '@/lib/utils'
 
 // --- 输入框组件 ---
 interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -25,12 +24,7 @@ const InputField = ({ icon, label, className, type = 'text', ...props }: InputFi
         </div>
         <input
           type={isPassword ? (showPassword ? 'text' : 'password') : type}
-          className={cn(
-            'w-full bg-slate-900/60 border border-white/10 text-slate-200 text-sm rounded-lg py-3 pl-10 pr-10',
-            'focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20',
-            'placeholder:text-slate-600 transition-all duration-300 backdrop-blur-sm',
-            className
-          )}
+          className={`w-full bg-slate-900/60 border border-white/10 text-slate-200 text-sm rounded-lg py-3 pl-10 pr-10 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 placeholder:text-slate-600 transition-all duration-300 backdrop-blur-sm ${className || ''}`}
           {...props}
         />
         {isPassword && (
@@ -79,28 +73,25 @@ export function LoginPage() {
             <button
               type="button"
               onClick={() => setIsLogin(true)}
-              className={cn(
-                'flex-1 py-2 text-xs font-bold rounded relative z-10 transition-colors duration-300',
+              className={`flex-1 py-2 text-xs font-bold rounded relative z-10 transition-colors duration-300 ${
                 isLogin ? 'text-emerald-400' : 'text-slate-500 hover:text-slate-300'
-              )}>
+              }`}>
               老韭菜归队
             </button>
             <button
               type="button"
               onClick={() => setIsLogin(false)}
-              className={cn(
-                'flex-1 py-2 text-xs font-bold rounded relative z-10 transition-colors duration-300',
+              className={`flex-1 py-2 text-xs font-bold rounded relative z-10 transition-colors duration-300 ${
                 !isLogin ? 'text-emerald-400' : 'text-slate-500 hover:text-slate-300'
-              )}>
+              }`}>
               萌新入场
             </button>
 
             {/* 切换滑块 */}
             <div
-              className={cn(
-                'absolute top-1 bottom-1 w-[calc(50%-4px)] bg-emerald-950/50 border border-emerald-500/30 rounded transition-all duration-300 ease-spring',
+              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-emerald-950/50 border border-emerald-500/30 rounded transition-all duration-300 ease-spring ${
                 isLogin ? 'left-1' : 'left-[calc(50%+4px)]'
-              )}
+              }`}
             />
           </div>
 

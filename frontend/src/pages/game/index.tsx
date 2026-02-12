@@ -13,15 +13,8 @@ import {
   BarChart3,
   TrendingUp,
 } from 'lucide-react'
-import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
 import { GameBoard } from '@/components/ui/GameBoard'
 import { SettingsModal } from '@/components/ui/SettingsModal'
-
-// --- 工具函数 ---
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
 
 // --- 常量 ---
 type SymbolType = 'fish' | 'prawn' | 'crab' | 'rooster' | 'gourd' | 'coin'
@@ -113,10 +106,9 @@ export function GamePage() {
             <h1 className="text-sm font-bold text-slate-100 flex items-center gap-2">
               {roomConfig.name}
               <span
-                className={cn(
-                  'w-2 h-2 rounded-full',
+                className={`w-2 h-2 rounded-full ${
                   gameState === 'betting' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'
-                )}
+                }`}
               />
             </h1>
           </div>
@@ -154,12 +146,11 @@ export function GamePage() {
                   type="button"
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={cn(
-                    'flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded transition-all',
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded transition-all ${
                     activeTab === tab.id
                       ? 'bg-slate-800 text-emerald-400 shadow-sm border border-white/5'
                       : 'text-slate-600 hover:text-slate-400'
-                  )}>
+                  }`}>
                   <tab.icon size={14} />
                   {tab.label}
                 </button>
@@ -182,12 +173,11 @@ export function GamePage() {
                       <button
                         onClick={handleRoll}
                         disabled={gameState !== 'betting'}
-                        className={cn(
-                          'w-full py-6 rounded-xl font-black text-xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-xl',
+                        className={`w-full py-6 rounded-xl font-black text-xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-xl ${
                           gameState === 'betting'
                             ? 'bg-linear-to-r from-red-600 to-orange-600 text-white shadow-red-900/30 hover:brightness-110'
                             : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-white/5'
-                        )}>
+                        }`}>
                         <Dices size={24} className={gameState === 'rolling' ? 'animate-spin' : ''} />
                         {gameState === 'betting' ? '开盘收割 (ROLL)' : '结算中...'}
                       </button>
@@ -271,14 +261,13 @@ export function GamePage() {
                     {MOCK_CHAT.map((msg, i) => (
                       <div
                         key={i}
-                        className={cn(
-                          'text-xs p-3 rounded-xl max-w-[85%]',
+                        className={`text-xs p-3 rounded-xl max-w-[85%] ${
                           msg.type === 'system'
                             ? 'bg-emerald-950/20 text-emerald-400 mx-auto w-full text-center border border-emerald-500/10'
                             : msg.user.includes('我')
                               ? 'bg-emerald-600 text-white ml-auto rounded-tr-none'
                               : 'bg-slate-800 text-slate-300 mr-auto rounded-tl-none'
-                        )}>
+                        }`}>
                         {msg.type !== 'system' && (
                           <span className="block font-bold text-[9px] opacity-50 mb-1">{msg.user}</span>
                         )}

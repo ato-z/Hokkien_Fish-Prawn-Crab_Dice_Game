@@ -1,4 +1,3 @@
-import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AlertTriangle, KeyRound, Save, Settings, Shield, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
@@ -73,15 +72,13 @@ export const SettingsModal = ({
                   <button
                     type="button"
                     onClick={() => setForm({ ...form, private: !form.private })}
-                    className={cn(
-                      'w-10 h-5 rounded-full relative transition-colors',
+                    className={`w-10 h-5 rounded-full relative transition-colors ${
                       form.private ? 'bg-emerald-600' : 'bg-slate-700'
-                    )}>
+                    }`}>
                     <div
-                      className={cn(
-                        'absolute top-1 w-3 h-3 bg-white rounded-full transition-all',
+                      className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${
                         form.private ? 'left-6' : 'left-1'
-                      )}
+                      }`}
                     />
                   </button>
                 </div>

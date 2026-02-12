@@ -1,6 +1,5 @@
 import type React from 'react'
 import { Banknote, Sprout } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 export const CardRoom: React.FC<{ room: Room }> = ({ room }) => {
   return (
@@ -26,10 +25,9 @@ export const CardRoom: React.FC<{ room: Room }> = ({ room }) => {
         {/* 右侧：状态/进入 */}
         <div className="flex flex-col items-end gap-2">
           <span
-            className={cn(
-              'text-[10px] px-2 py-0.5 rounded text-right whitespace-nowrap',
+            className={`text-[10px] px-2 py-0.5 rounded text-right whitespace-nowrap ${
               room.tag === '适合新手' ? 'text-emerald-400 bg-emerald-950/30' : 'text-slate-400 bg-slate-800/50'
-            )}>
+            }`}>
             {room.tag}
           </span>
         </div>
@@ -54,10 +52,9 @@ export const CardRoom: React.FC<{ room: Room }> = ({ room }) => {
           </div>
           <div className="w-12 h-1.5 bg-slate-800 rounded-full overflow-hidden">
             <div
-              className={cn(
-                'h-full rounded-full',
+              className={`h-full rounded-full ${
                 room.players >= room.maxPlayers - 2 ? 'bg-red-500' : 'bg-emerald-500'
-              )}
+              }`}
               style={{ width: `${(room.players / room.maxPlayers) * 100}%` }}
             />
           </div>
