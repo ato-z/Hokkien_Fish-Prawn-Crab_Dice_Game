@@ -4,10 +4,12 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { LoginPage } from '@/pages/login'
 import { LobbyPage } from '@/pages/lobby'
 import { GamePage } from '@/pages/game'
-import { NotFoundPage } from '@/pages/404' // 修正了拼写 NouFound -> NotFound
+import { NotFoundPage } from '@/pages/404'
 
 // 引入刚刚创建的守卫组件
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import { CreateRoomPage } from './pages/create-room'
+import { ProfilePage } from './pages/profile'
 
 export default function App() {
   return (
@@ -23,13 +25,13 @@ export default function App() {
           <Route path="/" element={<Navigate to="/lobby" replace />} />
 
           <Route path="/lobby" element={<LobbyPage />} />
+          <Route path="/create-room" element={<CreateRoomPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
 
           {/* 动态路由：游戏房间 */}
           <Route path="/game/:roomId" element={<GamePage />} />
         </Route>
 
-        {/* === 3. 404 处理 === */}
-        {/* 注意：element 必须接收 JSX (<Component />)，而不是函数引用 */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
