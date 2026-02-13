@@ -11,3 +11,9 @@ declare type Room = {
   private?: boolean
   password?: string
 }
+
+declare type OnChoiceTap = {
+  (type: 'single', input: number): void
+  (type: 'both', input: [number, number]): void
+  (type: 'set', input: [number, number, number]): void
+}

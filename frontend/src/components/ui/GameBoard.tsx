@@ -1,14 +1,26 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import type { HearthstoneSpinner } from '@/helper/HearthstoneSpinner'
+import { combine } from '@/helper/utils'
 
 interface GameBoardProps {
   diceResult: unknown[] | null
   isRolling: boolean
   gameController: HearthstoneSpinner
+  onChoice?: OnChoiceTap
 }
 
-export const GameBoard = ({ gameController }: GameBoardProps) => {
+export const GameBoard = ({ gameController, isRolling, onChoice }: GameBoardProps) => {
   const canvasView = useRef<HTMLDivElement>(null)
+  const bothGroup = combine(5, 2)
+  const onTap: OnChoiceTap = useCallback(
+    (type, input) => {
+      if (isRolling) return void 0
+      if (onChoice) {
+        onChoice(type as 'single', input as number)
+      }
+    },
+    [isRolling, onChoice]
+  )
 
   useEffect(() => {
     if (canvasView.current) {
@@ -17,45 +29,58 @@ export const GameBoard = ({ gameController }: GameBoardProps) => {
   }, [canvasView, gameController])
 
   return (
-    <aside className="aspect-square w-full bg-[#FCFBFE] flex flex-col">
-      {/* 顶部 */}
-      <section className="h-1/5 w-full flex border-b-2 border-red-700">
-        <div className="w-1/4 border-r-2 border-red-700 flex flex-col justify-center items-center p-2">
-          {/* 葫 鱼 蟹 */}
-          <span className="text-xs text-blue-800 font-bold mt-1">六倍区</span>
+    <aside className="aspect-square w-full game-container flex flex-col gap-0.5">
+      <div className="flex-1 bg-body"></div>
+      <section className="h-1/5 w-full flex gap-0.5">
+        <div className="w-1/5 bg-body">
+          <div className="grid grid-cols-3" onClick={() => onTap('set', [0, 1, 2])}>
+            {new Array(9).fill(1).map((_, i) => (
+              <i key={i} className={`aspect-square branch-index branch-${~~(i / 3)}`}></i>
+            ))}
+          </div>
         </div>
 
-        <div className="w-2/4 flex flex-col justify-center items-center border-r-2" ref={canvasView}>
+        <div className="w-3/5 flex flex-col justify-center bg-body items-center" ref={canvasView}>
           {/* canvas 开奖盘 */}
         </div>
 
-        <div className="w-1/4 flex flex-col justify-center items-center p-2">
-          {/* 钱 虾 鸡 */}
-          <span className="text-xs text-red-800 font-bold mt-1 ">六倍区</span>
+        <div className="w-1/5 bg-body">
+          <div className="grid grid-cols-3" onClick={() => onTap('set', [3, 4, 5])}>
+            {new Array(9).fill(1).map((_, i) => (
+              <i key={i} className={`aspect-square branch-index branch-${~~(i / 3) + 3}`}></i>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* 主区域 */}
-      <section className="flex h-3/5 text-black border-b-2 border-red-700">
-        <div className="flex-1 grid grid-cols-3 bg-red-700 gap-0.5">
-          {new Array(15).fill(1).map((_, i) => (
-            <div className="size-full" key={i}>
-              <div className="flex items-center justify-center size-full bg-[#FCFBFE]">{i + 1}</div>
+      <section className="flex h-3/5 text-black">
+        <div className="flex-1 grid grid-cols-3  gap-0.5">
+          {bothGroup.map(([l, r]) => (
+            <div
+              className="size-full both-group"
+              onClick={() => onTap('both', [l, r])}
+              key={`${l}_${r}`}
+              data-key={`${l}_${r}`}>
+              <i className={`branch-index branch-${l}`}></i>
+              <i className={`branch-index branch-${r}`}></i>
             </div>
           ))}
         </div>
       </section>
 
       {/* 单独 */}
-      <section className="h-1/5">
-        <div className="h-full grid grid-cols-6 bg-red-700 gap-0.5 text-black">
-          {['葫', '鱼', '蟹', '钱', '虾', '鸡'].map((_, i) => (
-            <div className="size-full" key={i}>
-              <div className="flex items-center justify-center size-full bg-[#FCFBFE]">{_}</div>
+      <section>
+        <div className="h-full grid grid-cols-6 gap-0.5 text-black">
+          {new Array(6).fill(0).map((_, i) => (
+            <div className="size-full" key={i} onClick={() => onTap('single', i)}>
+              <i className={`branch-index branch-${i}`}></i>
             </div>
           ))}
         </div>
       </section>
+
+      <div className="flex-1 bg-body"></div>
     </aside>
   )
 }

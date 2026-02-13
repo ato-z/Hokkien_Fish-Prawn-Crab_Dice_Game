@@ -148,7 +148,12 @@ export function GamePage() {
       <main className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-6 p-0 lg:p-6 max-w-400 mx-auto w-full relative z-0">
         {/* Left: Game Board */}
         <section className="lg:col-span-7 flex flex-col p-2 lg:p-0">
-          <GameBoard gameController={gameController} diceResult={diceResult} isRolling={gameState === 'rolling'} />
+          <GameBoard
+            onChoice={console.log}
+            gameController={gameController}
+            diceResult={diceResult}
+            isRolling={gameState === 'rolling'}
+          />
         </section>
 
         {/* Right: Panel */}
