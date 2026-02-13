@@ -3,7 +3,7 @@ declare type Room = {
   name: string
   sub: string
   minBet: number
-  players: number
+  jetton: number[]
   maxPlayers: number
   status: string
   tag: string

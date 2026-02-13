@@ -1,7 +1,21 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Coins, Users, Lock, Unlock, Type, Tag, Sparkles, Banknote, KeyRound } from 'lucide-react'
+import {
+  ArrowLeft,
+  Coins,
+  Users,
+  Lock,
+  Unlock,
+  Type,
+  Tag,
+  Sparkles,
+  Banknote,
+  KeyRound,
+  Plus,
+  X,
+  Edit2,
+} from 'lucide-react'
 import { BackgroundCommon } from '@/components/ui/Background'
 
 export function CreateRoomPage() {
@@ -12,13 +26,17 @@ export function CreateRoomPage() {
     name: '',
     sub: '',
     minBet: 0,
+    jetton: [1, 5, 10], // 默认筹码选项
     maxPlayers: 6,
     private: true,
     password: '', // 默认为空
-    players: 1,
     status: 'waiting',
     hot: true,
   })
+
+  // 筹码编辑状态
+  const [editingJettonIndex, setEditingJettonIndex] = useState<number | null>(null)
+  const [editingJettonValue, setEditingJettonValue] = useState<string>('')
 
   // 动态计算 Tag
   useEffect(() => {
@@ -35,6 +53,53 @@ export function CreateRoomPage() {
     setFormData((prev) => ({ ...prev, tag: autoTag }))
   }, [formData.minBet])
 
+  // 添加筹码
+  const handleAddJetton = () => {
+    const jettons = formData.jetton || []
+    if (jettons.length >= 10) {
+      alert('最多只能添加 10 个筹码选项')
+      return
+    }
+    setFormData({ ...formData, jetton: [...jettons, 1] })
+  }
+
+  // 删除筹码
+  const handleDeleteJetton = (index: number) => {
+    const jettons = formData.jetton || []
+    if (jettons.length <= 1) {
+      alert('至少保留一个筹码选项')
+      return
+    }
+    setFormData({ ...formData, jetton: jettons.filter((_, i) => i !== index) })
+  }
+
+  // 开始编辑筹码
+  const handleStartEditJetton = (index: number, value: number) => {
+    setEditingJettonIndex(index)
+    setEditingJettonValue(value.toString())
+  }
+
+  // 保存编辑的筹码
+  const handleSaveJetton = (index: number) => {
+    const newValue = parseInt(editingJettonValue)
+    if (isNaN(newValue) || newValue <= 0) {
+      alert('请输入有效的正整数')
+      return
+    }
+    const jettons = formData.jetton || []
+    const newJettons = [...jettons]
+    newJettons[index] = newValue
+    setFormData({ ...formData, jetton: newJettons })
+    setEditingJettonIndex(null)
+    setEditingJettonValue('')
+  }
+
+  // 取消编辑
+  const handleCancelEdit = () => {
+    setEditingJettonIndex(null)
+    setEditingJettonValue('')
+  }
+
   // 处理提交
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,7 +115,7 @@ export function CreateRoomPage() {
       name: formData.name || `未命名盘口 ${Math.floor(Math.random() * 100)}`,
       sub: formData.sub || 'NEW LISTING',
       minBet: formData.minBet || 0,
-      players: 1,
+      jetton: [1, 5, 10],
       maxPlayers: formData.maxPlayers || 6,
       status: 'waiting',
       tag: formData.tag || '尝试',
@@ -178,7 +243,7 @@ export function CreateRoomPage() {
               <input
                 type="range"
                 min="0"
-                max="1000"
+                max="500"
                 step="10"
                 className="w-full accent-emerald-500 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer"
                 value={formData.minBet}
@@ -187,7 +252,7 @@ export function CreateRoomPage() {
               />
               <div className="flex justify-between text-[10px] text-slate-600 font-mono">
                 <span>¥0 (慈善)</span>
-                <span>¥1000 (首富)</span>
+                <span>¥500 (首富)</span>
               </div>
             </div>
 
@@ -215,6 +280,79 @@ export function CreateRoomPage() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="w-full h-px bg-white/5" />
+
+            {/* 筹码选项管理 */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <label className="text-xs text-slate-400 flex items-center gap-2">
+                  <Coins size={14} /> 筹码选项 (Jetton Options)
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAddJetton}
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-950/30 border border-emerald-500/30 text-emerald-400 text-xs hover:bg-emerald-950/50 transition-colors">
+                  <Plus size={12} />
+                  <span>添加</span>
+                </button>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {(formData.jetton || []).map((value, index) => (
+                  <div
+                    key={index}
+                    className="relative bg-slate-800/50 border border-white/10 rounded-lg p-2 flex items-center justify-between group">
+                    {editingJettonIndex === index ? (
+                      <div className="flex items-center gap-1 w-full">
+                        <input
+                          type="number"
+                          min="1"
+                          className="w-full bg-slate-900 border border-emerald-500/50 rounded px-2 py-1 text-xs text-slate-200 focus:outline-none"
+                          value={editingJettonValue}
+                          onChange={(e) => setEditingJettonValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveJetton(index)
+                            if (e.key === 'Escape') handleCancelEdit()
+                          }}
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleSaveJetton(index)}
+                          className="p-1 text-emerald-400 hover:text-emerald-300">
+                          <Sparkles size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCancelEdit}
+                          className="p-1 text-slate-400 hover:text-slate-300">
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="font-mono text-sm text-slate-200">¥{value}</span>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => handleStartEditJetton(index, value)}
+                            className="p-1 text-slate-400 hover:text-emerald-400 transition-colors">
+                            <Edit2 size={12} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteJetton(index)}
+                            className="p-1 text-slate-400 hover:text-red-400 transition-colors">
+                            <X size={12} />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-500 ml-1">点击编辑图标修改筹码金额，点击 X 删除筹码</p>
             </div>
           </div>
 
