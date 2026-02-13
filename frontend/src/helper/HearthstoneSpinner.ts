@@ -16,6 +16,7 @@ interface ColumnState {
  * 构造函数配置接口
  */
 interface SpinnerOptions {
+  roomId: string
   column: number // 列数
   sidesPath: string // 图片路径
   sideNumber: number // 面数（一圈有多少个图标）
@@ -57,7 +58,11 @@ export class HearthstoneSpinner {
    */
   static destroy(roomId: string, option: SpinnerOptions) {
     const key = `${roomId}_${JSON.stringify(option)}`
-    gameMap.delete(key)
+    const instance = gameMap.get(key)
+
+    if (instance) {
+      instance.destroy()
+    }
   }
 
   /**
@@ -340,7 +345,19 @@ export class HearthstoneSpinner {
     el.appendChild(this.pRight)
   }
 
-  private constructor({ column, sidesPath, sideNumber, audioPath }: SpinnerOptions) {
+  /**
+   * 销毁方法
+   * @param param0
+   */
+  destroy() {
+    const key = `${this.option.roomId}_${JSON.stringify(this.option)}`
+    gameMap.delete(key)
+    console.log('注销类')
+  }
+
+  private constructor(option: SpinnerOptions) {
+    this.option = option
+    const { column, sidesPath, sideNumber, audioPath } = option
     this.canvas = document.createElement('canvas')
     this.ctx = this.canvas.getContext('2d')
     this.pLeft = document.createElement('div')
@@ -388,6 +405,8 @@ export class HearthstoneSpinner {
   private ctx: CanvasRenderingContext2D | null
   public readonly pLeft: HTMLElement
   public readonly pRight: HTMLElement
+
+  protected option
 
   private columnCount: number
   private sidesPath: string

@@ -1,13 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Settings, Users, MessageSquare, Coins, BarChart3 } from 'lucide-react'
+import { SYMBOL_TYPE } from '@/enum'
+import { useAtom, useSetAtom } from 'jotai'
+import { gameControllerAtom, roomInfoAtom, roomStatusAtom, startRollAtom, withRoomIdAtom } from '@/store/game'
+import { RoomTransition } from '@/components/ui/RoomTransition'
 import { GameBoard } from '@/components/ui/GameBoard'
 import { SettingsModal } from '@/components/ui/SettingsModal'
-import { HearthstoneSpinner } from '@/helper/HearthstoneSpinner'
-import sidesPath from '@/assets/sides.webp'
-import spinPath from '@/assets/spin.mp3'
-import { SYMBOL_TYPE } from '@/enum'
 import { Chat } from './component/Chat'
 import { ConsoleBoss } from './component/boss/Console'
 import { ConsolePlayer } from './component/player/Console'
@@ -17,29 +17,14 @@ import { PlayerList } from './component/PlayerList'
 export function GamePage() {
   const navigate = useNavigate()
   const { roomId } = useParams()
-  const [roomConfig, setRoomConfig] = useState<Room>({
-    id: '1',
-    name: '韭菜收割机_101',
-    sub: 'FERTILIZER ZONE',
-    private: false,
-    minBet: 0,
-    jetton: [1, 5, 10],
-    maxPlayers: 0,
-    status: 'betting',
-    tag: '无料',
-  })
-  const gameController = HearthstoneSpinner.getInstance(roomId ?? '1', {
-    column: 3,
-    sideNumber: 6,
-    sidesPath: sidesPath,
-    audioPath: spinPath,
-  })
-  console.log('room id', roomId)
-
+  const [roomConfig] = useAtom(roomInfoAtom)
   // 状态管理
-  const [isDealer] = useState(false)
+  const [isDealer] = useState(true)
   const [activeTab, setActiveTab] = useState<'bet' | 'chat' | 'users'>('bet')
-  const [diceResult, setDiceResult] = useState<SYMBOL_TYPE[] | null>(null)
+  const [roomState] = useAtom(roomStatusAtom)
+  const [gameController] = useAtom(gameControllerAtom)
+  const withRoomId = useSetAtom(withRoomIdAtom)
+  const startRoll = useSetAtom(startRollAtom)
 
   // 房间设置状态
   const [showSettings, setShowSettings] = useState(false)
@@ -52,40 +37,24 @@ export function GamePage() {
 
   // 游戏逻辑
   const handleRoll = async () => {
-    setRoomConfig({
-      ...roomConfig,
-      status: 'rolling',
-    })
-    setDiceResult(null)
     const targets = Array.from({ length: 3 }, () => Math.floor(Math.random() * 6)) as SYMBOL_TYPE[]
-
-    // 等待动画完成
-    await gameController.runTo({
-      column: targets,
-      duration: 5000,
-    })
-
-    // 动画完成后显示结果
-    setDiceResult(targets)
-    setRoomConfig({
-      ...roomConfig,
-      status: 'result',
-    })
-
-    // 3秒后可以再次开盘
-    setTimeout(() => {
-      setRoomConfig({
-        ...roomConfig,
-        status: 'betting',
-      })
-    }, 3000)
+    startRoll({ duration: 6000, column: targets })
   }
 
   const handleSaveSettings = (data: Partial<Room>) => {
     console.log('Saving Settings:', data)
-    // setRoomConfig({ name: data.name ?? roomConfig.name, private: !!data.private })
     setShowSettings(false)
   }
+
+  // 获取房号
+  useEffect(() => {
+    if (roomId) withRoomId(roomId.toString())
+    return () => {
+      gameController?.destroy()
+    }
+  }, [roomId, withRoomId, gameController])
+
+  if (roomConfig === null) return <RoomTransition />
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col overflow-hidden relative">
@@ -103,7 +72,7 @@ export function GamePage() {
               {roomConfig.name}
               <span
                 className={`w-2 h-2 rounded-full ${
-                  roomConfig.status === 'betting' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'
+                  roomState === 'betting' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'
                 }`}
               />
             </h1>
@@ -130,12 +99,9 @@ export function GamePage() {
       <main className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-6 p-0 lg:p-6 max-w-400 mx-auto w-full relative z-0">
         {/* Left: Game Board */}
         <section className="lg:col-span-7 flex flex-col p-2 lg:p-0">
-          <GameBoard
-            onChoice={console.log}
-            gameController={gameController}
-            diceResult={diceResult}
-            isRolling={roomConfig.status === 'rolling'}
-          />
+          {gameController && (
+            <GameBoard onChoice={console.log} gameController={gameController} isRolling={roomState === 'rolling'} />
+          )}
         </section>
 
         {/* Right: Panel */}
@@ -170,7 +136,7 @@ export function GamePage() {
                   exit={{ opacity: 0, x: -20 }}
                   className="flex-1 overflow-y-auto p-4 space-y-4">
                   {isDealer ? (
-                    <ConsoleBoss onTap={handleRoll} state={roomConfig.status} />
+                    <ConsoleBoss onTap={handleRoll} state={roomState} />
                   ) : (
                     <ConsolePlayer room={roomConfig} />
                   )}

@@ -4,13 +4,12 @@ import { SYMBOL_TYPE } from '@/enum'
 import { GAME_TAGS } from '@/constant'
 
 interface GameBoardProps {
-  diceResult: SYMBOL_TYPE[] | null
   isRolling: boolean
   gameController: HearthstoneSpinner
   onChoice?: OnChoiceTap
 }
 
-export const GameBoard = ({ diceResult, gameController, isRolling, onChoice }: GameBoardProps) => {
+export const GameBoard = ({ gameController, isRolling, onChoice }: GameBoardProps) => {
   const canvasView = useRef<HTMLDivElement>(null)
   const onTap: OnChoiceTap = useCallback(
     (type, input) => {
@@ -22,7 +21,7 @@ export const GameBoard = ({ diceResult, gameController, isRolling, onChoice }: G
     [isRolling, onChoice]
   )
 
-  console.log('结果', diceResult)
+  console.log('结果类型', SYMBOL_TYPE)
 
   useEffect(() => {
     if (canvasView.current) {
