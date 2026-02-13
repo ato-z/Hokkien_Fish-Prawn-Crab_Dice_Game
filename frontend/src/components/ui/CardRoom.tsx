@@ -1,7 +1,7 @@
 import type React from 'react'
 import { Banknote, Sprout } from 'lucide-react'
 
-export const CardRoom: React.FC<{ room: Room }> = ({ room }) => {
+export const CardRoom: React.FC<{ room: Room & { players: number } }> = ({ room }) => {
   return (
     <section className="group relative bg-slate-900 border border-white/5 rounded-xl p-4 cursor-pointer hover:border-emerald-500/30 transition-all active:scale-[0.99] overflow-hidden">
       <Sprout className="absolute -right-4 -bottom-4 text-emerald-900/10 w-24 h-24 rotate-12 group-hover:rotate-6 transition-transform pointer-events-none" />
@@ -52,9 +52,7 @@ export const CardRoom: React.FC<{ room: Room }> = ({ room }) => {
           </div>
           <div className="w-12 h-1.5 bg-slate-800 rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full ${
-                room.players >= room.maxPlayers - 2 ? 'bg-red-500' : 'bg-emerald-500'
-              }`}
+              className={`h-full rounded-full ${room.players >= room.maxPlayers - 2 ? 'bg-red-500' : 'bg-emerald-500'}`}
               style={{ width: `${(room.players / room.maxPlayers) * 100}%` }}
             />
           </div>

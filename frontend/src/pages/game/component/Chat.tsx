@@ -1,6 +1,6 @@
 import { MOCK_CHAT } from '@/mock'
 import { Send } from 'lucide-react'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 /**
  * 聊天看板
@@ -8,6 +8,12 @@ import { useRef } from 'react'
 export const Chat = () => {
   // 聊天滚动 Ref
   const chatEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [chatEndRef])
 
   return (
     <aside className="flex flex-col h-full">

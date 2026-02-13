@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Settings, Users, MessageSquare, Coins, BarChart3 } from 'lucide-react'
@@ -17,6 +17,17 @@ import { PlayerList } from './component/PlayerList'
 export function GamePage() {
   const navigate = useNavigate()
   const { roomId } = useParams()
+  const [roomConfig, setRoomConfig] = useState<Room>({
+    id: '1',
+    name: '韭菜收割机_101',
+    sub: 'FERTILIZER ZONE',
+    private: false,
+    minBet: 0,
+    jetton: [1, 5, 10],
+    maxPlayers: 0,
+    status: 'betting',
+    tag: '无料',
+  })
   const gameController = HearthstoneSpinner.getInstance(roomId ?? '1', {
     column: 3,
     sideNumber: 6,
@@ -28,15 +39,10 @@ export function GamePage() {
   // 状态管理
   const [isDealer] = useState(false)
   const [activeTab, setActiveTab] = useState<'bet' | 'chat' | 'users'>('bet')
-  const [gameState, setGameState] = useState<GameState>('betting')
   const [diceResult, setDiceResult] = useState<SYMBOL_TYPE[] | null>(null)
 
   // 房间设置状态
   const [showSettings, setShowSettings] = useState(false)
-  const [roomConfig, setRoomConfig] = useState({ name: '韭菜收割机_101', private: false })
-
-  // 聊天滚动 Ref
-  const chatEndRef = useRef<HTMLDivElement>(null)
 
   const pageTab = [
     { id: 'bet', label: isDealer ? '监控' : '下注', icon: isDealer ? BarChart3 : Coins },
@@ -44,15 +50,12 @@ export function GamePage() {
     { id: 'users', label: '农场', icon: Users },
   ] as const
 
-  useEffect(() => {
-    if (activeTab === 'chat' && chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, [activeTab])
-
   // 游戏逻辑
   const handleRoll = async () => {
-    setGameState('rolling')
+    setRoomConfig({
+      ...roomConfig,
+      status: 'rolling',
+    })
     setDiceResult(null)
     const targets = Array.from({ length: 3 }, () => Math.floor(Math.random() * 6)) as SYMBOL_TYPE[]
 
@@ -64,17 +67,23 @@ export function GamePage() {
 
     // 动画完成后显示结果
     setDiceResult(targets)
-    setGameState('result')
+    setRoomConfig({
+      ...roomConfig,
+      status: 'result',
+    })
 
     // 3秒后可以再次开盘
     setTimeout(() => {
-      setGameState('betting')
+      setRoomConfig({
+        ...roomConfig,
+        status: 'betting',
+      })
     }, 3000)
   }
 
   const handleSaveSettings = (data: Partial<Room>) => {
     console.log('Saving Settings:', data)
-    setRoomConfig({ name: data.name ?? roomConfig.name, private: !!data.private })
+    // setRoomConfig({ name: data.name ?? roomConfig.name, private: !!data.private })
     setShowSettings(false)
   }
 
@@ -94,7 +103,7 @@ export function GamePage() {
               {roomConfig.name}
               <span
                 className={`w-2 h-2 rounded-full ${
-                  gameState === 'betting' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'
+                  roomConfig.status === 'betting' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'
                 }`}
               />
             </h1>
@@ -125,7 +134,7 @@ export function GamePage() {
             onChoice={console.log}
             gameController={gameController}
             diceResult={diceResult}
-            isRolling={gameState === 'rolling'}
+            isRolling={roomConfig.status === 'rolling'}
           />
         </section>
 
@@ -161,9 +170,9 @@ export function GamePage() {
                   exit={{ opacity: 0, x: -20 }}
                   className="flex-1 overflow-y-auto p-4 space-y-4">
                   {isDealer ? (
-                    <ConsoleBoss onTap={handleRoll} state={gameState} />
+                    <ConsoleBoss onTap={handleRoll} state={roomConfig.status} />
                   ) : (
-                    <ConsolePlayer state={gameState} />
+                    <ConsolePlayer room={roomConfig} />
                   )}
                 </motion.div>
               )}
@@ -197,7 +206,7 @@ export function GamePage() {
         onClose={() => setShowSettings(false)}
         onSave={handleSaveSettings}
         roomName={roomConfig.name}
-        isPrivate={roomConfig.private}
+        isPrivate={false}
       />
     </div>
   )

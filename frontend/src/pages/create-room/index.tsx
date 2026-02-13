@@ -30,7 +30,7 @@ export function CreateRoomPage() {
     maxPlayers: 6,
     private: true,
     password: '', // 默认为空
-    status: 'waiting',
+    status: 'betting',
     hot: true,
   })
 
@@ -117,8 +117,8 @@ export function CreateRoomPage() {
       minBet: formData.minBet || 0,
       jetton: [1, 5, 10],
       maxPlayers: formData.maxPlayers || 6,
-      status: 'waiting',
-      tag: formData.tag || '尝试',
+      status: 'betting',
+      tag: formData.tag || '-',
       hot: true,
       private: formData.private,
       password: formData.password,

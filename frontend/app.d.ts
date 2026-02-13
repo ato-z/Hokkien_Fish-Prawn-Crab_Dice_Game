@@ -5,7 +5,7 @@ declare type Room = {
   minBet: number
   jetton: number[]
   maxPlayers: number
-  status: string
+  status: GameState
   tag: string
   hot?: boolean
   private?: boolean
