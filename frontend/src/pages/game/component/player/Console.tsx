@@ -1,6 +1,7 @@
 import { CheckCircle2, Coins } from 'lucide-react'
 import { useAtom } from 'jotai'
-import { currentJettonAtom } from '@/store/player'
+import { currentJettonAtom, playerJettonAtom } from '@/store/player'
+import { useEffect } from 'react'
 
 interface ConsolePlayerProp {
   room: Room
@@ -9,6 +10,12 @@ interface ConsolePlayerProp {
 export const ConsolePlayer = ({ room }: ConsolePlayerProp) => {
   // 当前选中的筹码索引（使用 jotai 全局状态）
   const [current, setCurrent] = useAtom(currentJettonAtom)
+  const [jetton, setJetton] = useAtom(playerJettonAtom)
+  // set(playerJettonAtom, roomInfo.jetton[get(currentJettonAtom)])
+
+  useEffect(() => {
+    setJetton(room.jetton[current])
+  }, [setJetton, room, current])
 
   return (
     <aside className="flex flex-col gap-2">
@@ -40,7 +47,7 @@ export const ConsolePlayer = ({ room }: ConsolePlayerProp) => {
             </button>
           ))}
         </div>
-        <div className="text-[10px] text-slate-500 text-center font-mono">当前选中: ¥{room.jetton[current]}</div>
+        <div className="text-[10px] text-slate-500 text-center font-mono">当前选中: ¥{jetton}</div>
       </div>
 
       {/* 梭哈按钮 */}

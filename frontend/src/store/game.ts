@@ -3,6 +3,7 @@ import { GAME_DEFAULT_OPTION } from '@/constant'
 import type { SYMBOL_TYPE } from '@/enum'
 import { HearthstoneSpinner } from '@/helper/HearthstoneSpinner'
 import { atom } from 'jotai'
+import { currentJettonAtom, playerJettonAtom } from './player'
 
 // 游戏配置
 export const gameOptionAtom = atom(GAME_DEFAULT_OPTION)
@@ -34,9 +35,16 @@ export const withRoomIdAtom = atom(null, async (get, set, input: string) => {
   // 效果旧的控制器
   HearthstoneSpinner.destroy(currentRoomId!, gameOption)
 
+  // 以前更新避免并发
   set(roomIdAtom, input)
+
+  // 从线上获取房间信息
   const roomInfo = await apiGetRoomInfoById(input)
   set(roomInfoAtom, roomInfo)
+  // 更新玩家持有筹码
+  set(playerJettonAtom, roomInfo.jetton[get(currentJettonAtom)])
+
+  // 更新控制器
   set(gameControllerAtom, HearthstoneSpinner.getInstance(input, gameOption))
 })
 

@@ -1,27 +1,38 @@
 import { useCallback, useEffect, useRef } from 'react'
 import type { HearthstoneSpinner } from '@/helper/HearthstoneSpinner'
-import { SYMBOL_TYPE } from '@/enum'
 import { GAME_TAGS } from '@/constant'
+import { useAtom, useSetAtom } from 'jotai'
+import { pushBetSelfAtom, pushBetAllAtom, playerJettonAtom } from '@/store/player'
 
 interface GameBoardProps {
   isRolling: boolean
   gameController: HearthstoneSpinner
-  onChoice?: OnChoiceTap
 }
 
-export const GameBoard = ({ gameController, isRolling, onChoice }: GameBoardProps) => {
+export const GameBoard = ({ gameController, isRolling }: GameBoardProps) => {
   const canvasView = useRef<HTMLDivElement>(null)
-  const onTap: OnChoiceTap = useCallback(
-    (type, input) => {
-      if (isRolling) return void 0
-      if (onChoice) {
-        onChoice(type as 'single', input as number)
-      }
-    },
-    [isRolling, onChoice]
-  )
+  const [jetton] = useAtom(playerJettonAtom)
+  const pushBetSelf = useSetAtom(pushBetSelfAtom)
+  const pushBetAll = useSetAtom(pushBetAllAtom)
 
-  console.log('结果类型', SYMBOL_TYPE)
+  // 点击下注和
+  const onTap: OnChoiceTap = useCallback(
+    (key, indexs) => {
+      if (isRolling) return void 0
+
+      const eq = indexs instanceof Array ? indexs.join('_') : indexs.toString()
+
+      pushBetSelf({
+        key,
+        target: { eq, value: jetton },
+        notice: (key, eq, value) => {
+          console.log('在这里通知服务器...')
+          pushBetAll({ key, target: { eq, value } })
+        },
+      })
+    },
+    [isRolling, jetton, pushBetSelf, pushBetAll]
+  )
 
   useEffect(() => {
     if (canvasView.current) {

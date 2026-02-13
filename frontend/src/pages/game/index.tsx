@@ -5,6 +5,7 @@ import { ArrowLeft, Settings, Users, MessageSquare, Coins, BarChart3 } from 'luc
 import { SYMBOL_TYPE } from '@/enum'
 import { useAtom, useSetAtom } from 'jotai'
 import { gameControllerAtom, roomInfoAtom, roomStatusAtom, startRollAtom, withRoomIdAtom } from '@/store/game'
+import { bossAtom } from '@/store/player'
 import { RoomTransition } from '@/components/ui/RoomTransition'
 import { GameBoard } from '@/components/ui/GameBoard'
 import { SettingsModal } from '@/components/ui/SettingsModal'
@@ -17,10 +18,9 @@ import { PlayerList } from './component/PlayerList'
 export function GamePage() {
   const navigate = useNavigate()
   const { roomId } = useParams()
-  const [roomConfig] = useAtom(roomInfoAtom)
-  // 状态管理
-  const [isDealer] = useState(true)
   const [activeTab, setActiveTab] = useState<'bet' | 'chat' | 'users'>('bet')
+  const [roomConfig] = useAtom(roomInfoAtom)
+  const [isBoss] = useAtom(bossAtom)
   const [roomState] = useAtom(roomStatusAtom)
   const [gameController] = useAtom(gameControllerAtom)
   const withRoomId = useSetAtom(withRoomIdAtom)
@@ -30,7 +30,7 @@ export function GamePage() {
   const [showSettings, setShowSettings] = useState(false)
 
   const pageTab = [
-    { id: 'bet', label: isDealer ? '监控' : '下注', icon: isDealer ? BarChart3 : Coins },
+    { id: 'bet', label: isBoss ? '监控' : '下注', icon: isBoss ? BarChart3 : Coins },
     { id: 'chat', label: '内幕', icon: MessageSquare },
     { id: 'users', label: '农场', icon: Users },
   ] as const
@@ -83,8 +83,7 @@ export function GamePage() {
             <div className="text-[10px] text-slate-500 uppercase">My Assets</div>
             <div className="text-xs font-mono text-amber-400 font-bold">¥88,800</div>
           </div>
-          {/* 庄家设置按钮入口 */}
-          {isDealer && (
+          {isBoss && (
             <button
               type="button"
               onClick={() => setShowSettings(true)}
@@ -99,9 +98,7 @@ export function GamePage() {
       <main className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-6 p-0 lg:p-6 max-w-400 mx-auto w-full relative z-0">
         {/* Left: Game Board */}
         <section className="lg:col-span-7 flex flex-col p-2 lg:p-0">
-          {gameController && (
-            <GameBoard onChoice={console.log} gameController={gameController} isRolling={roomState === 'rolling'} />
-          )}
+          {gameController && <GameBoard gameController={gameController} isRolling={roomState === 'rolling'} />}
         </section>
 
         {/* Right: Panel */}
@@ -127,7 +124,6 @@ export function GamePage() {
 
           <div className="flex-1 overflow-hidden relative flex flex-col">
             <AnimatePresence mode="wait">
-              {/* Tab A: Bet/Monitor */}
               {activeTab === 'bet' && (
                 <motion.div
                   key="bet"
@@ -135,11 +131,7 @@ export function GamePage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {isDealer ? (
-                    <ConsoleBoss onTap={handleRoll} state={roomState} />
-                  ) : (
-                    <ConsolePlayer room={roomConfig} />
-                  )}
+                  {isBoss ? <ConsoleBoss onTap={handleRoll} state={roomState} /> : <ConsolePlayer room={roomConfig} />}
                 </motion.div>
               )}
 
