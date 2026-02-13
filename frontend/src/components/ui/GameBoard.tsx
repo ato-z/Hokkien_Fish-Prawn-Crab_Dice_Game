@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useRef } from 'react'
 import type { HearthstoneSpinner } from '@/helper/HearthstoneSpinner'
 import { combine } from '@/helper/utils'
+import { SYMBOL_TYPE } from '@/enum'
 
 interface GameBoardProps {
-  diceResult: unknown[] | null
+  diceResult: SYMBOL_TYPE[] | null
   isRolling: boolean
   gameController: HearthstoneSpinner
   onChoice?: OnChoiceTap
 }
 
-export const GameBoard = ({ gameController, isRolling, onChoice }: GameBoardProps) => {
+export const GameBoard = ({ diceResult, gameController, isRolling, onChoice }: GameBoardProps) => {
   const canvasView = useRef<HTMLDivElement>(null)
   const bothGroup = combine(5, 2)
   const onTap: OnChoiceTap = useCallback(
@@ -21,6 +22,8 @@ export const GameBoard = ({ gameController, isRolling, onChoice }: GameBoardProp
     },
     [isRolling, onChoice]
   )
+
+  console.log('结果', diceResult)
 
   useEffect(() => {
     if (canvasView.current) {
@@ -40,7 +43,9 @@ export const GameBoard = ({ gameController, isRolling, onChoice }: GameBoardProp
           </div>
         </div>
 
-        <div className="w-3/5 flex flex-col justify-center bg-body items-center" ref={canvasView}>
+        <div
+          className="w-3/5 flex flex-col justify-center bg-body items-center relative overflow-hidden"
+          ref={canvasView}>
           {/* canvas 开奖盘 */}
         </div>
 

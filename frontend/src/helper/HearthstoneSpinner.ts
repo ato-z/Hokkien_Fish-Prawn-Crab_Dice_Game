@@ -85,11 +85,13 @@ export class HearthstoneSpinner {
 
   /**
    * 物理与状态更新
+   * @returns 是否还有列在动画中
    */
-  private update(): void {
+  private update(): boolean {
     const now = performance.now()
     let maxVelocity = 0
     let shouldPlayTick = false
+    let hasAnimating = false
 
     this.columns.forEach((col) => {
       if (!col.isAnimating) {
@@ -97,6 +99,7 @@ export class HearthstoneSpinner {
         return
       }
 
+      hasAnimating = true
       const elapsed = now - col.startTime
       const progress = Math.min(elapsed / col.duration, 1)
 
@@ -126,6 +129,8 @@ export class HearthstoneSpinner {
     }
 
     this.updatePointers(maxVelocity)
+
+    return hasAnimating
   }
 
   /**
@@ -206,13 +211,13 @@ export class HearthstoneSpinner {
   }
 
   /**
-   * 渲染循环
+   * 渲染循环（按需执行）
    */
-  public render(): void {
+  private renderLoop(): void {
     if (!this.isReady || !this.ctx) return
 
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    this.update()
+    const hasAnimating = this.update()
 
     for (let i = 0; i < this.columnCount; i++) {
       this.drawColumn(i)
@@ -223,7 +228,35 @@ export class HearthstoneSpinner {
     this.ctx.lineWidth = 4
     this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height)
 
-    requestAnimationFrame(() => this.render())
+    // 只有在动画进行中时才继续循环
+    if (hasAnimating) {
+      this.animationFrameId = requestAnimationFrame(() => this.renderLoop())
+    } else {
+      // 动画完成，停止循环并 resolve Promise
+      this.animationFrameId = null
+      if (this.resolveAnimation) {
+        this.resolveAnimation()
+        this.resolveAnimation = null
+      }
+    }
+  }
+
+  /**
+   * 初始渲染（仅绘制一次静态画面）
+   */
+  private renderOnce(): void {
+    if (!this.isReady || !this.ctx) return
+
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
+    for (let i = 0; i < this.columnCount; i++) {
+      this.drawColumn(i)
+    }
+
+    // 绘制外边框
+    this.ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)'
+    this.ctx.lineWidth = 4
+    this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height)
   }
 
   /**
@@ -251,29 +284,48 @@ export class HearthstoneSpinner {
 
   /**
    * 运行转盘到指定结果
+   * @returns Promise，在动画完成时 resolve
    */
-  runTo({ column, duration }: RunToOptions): void {
-    if (this.audioContext && this.audioContext.state === 'suspended') {
-      this.audioContext.resume()
-    }
+  runTo({ column, duration }: RunToOptions): Promise<void> {
+    return new Promise<void>((resolve) => {
+      if (this.audioContext && this.audioContext.state === 'suspended') {
+        this.audioContext.resume()
+      }
 
-    const now = performance.now()
-    const minSpins = 15
+      // 如果已有动画在运行，先取消
+      if (this.animationFrameId !== null) {
+        cancelAnimationFrame(this.animationFrameId)
+        this.animationFrameId = null
+        // 如果有未完成的 Promise，先 resolve 它
+        if (this.resolveAnimation) {
+          this.resolveAnimation()
+        }
+      }
 
-    // 注意：这里的 column 参数实际上是目标索引数组 (targetIndices)
-    column.forEach((targetIndex, i) => {
-      if (i >= this.columns.length) return
+      // 保存新的 resolve 函数
+      this.resolveAnimation = resolve
 
-      const col = this.columns[i]
-      col.startTime = now
-      col.duration = duration + i * 200 // 每一列错开停止
-      col.startPos = col.currentPos
-      col.lastIntPos = Math.floor(col.currentPos)
-      col.isAnimating = true
+      const now = performance.now()
+      const minSpins = 15
 
-      // 计算目标位置：当前基数 + 最小旋转圈数 + 目标偏移
-      const currentBase = Math.ceil(col.startPos / this.sideNumber) * this.sideNumber
-      col.targetPos = currentBase + minSpins * this.sideNumber + targetIndex
+      // 注意：这里的 column 参数实际上是目标索引数组 (targetIndices)
+      column.forEach((targetIndex, i) => {
+        if (i >= this.columns.length) return
+
+        const col = this.columns[i]
+        col.startTime = now
+        col.duration = duration + i * 200 // 每一列错开停止
+        col.startPos = col.currentPos
+        col.lastIntPos = Math.floor(col.currentPos)
+        col.isAnimating = true
+
+        // 计算目标位置：当前基数 + 最小旋转圈数 + 目标偏移
+        const currentBase = Math.ceil(col.startPos / this.sideNumber) * this.sideNumber
+        col.targetPos = currentBase + minSpins * this.sideNumber + targetIndex
+      })
+
+      // 启动渲染循环
+      this.renderLoop()
     })
   }
 
@@ -327,7 +379,8 @@ export class HearthstoneSpinner {
 
     this.img.onload = () => {
       this.isReady = true
-      this.render()
+      // 初始化时只绘制一次静态画面
+      this.renderOnce()
     }
   }
 
@@ -354,4 +407,8 @@ export class HearthstoneSpinner {
   private img: HTMLImageElement
   private isReady: boolean = false
   private columns: ColumnState[]
+
+  // 动画控制
+  private animationFrameId: number | null = null
+  private resolveAnimation: (() => void) | null = null
 }

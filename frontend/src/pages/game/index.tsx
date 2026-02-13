@@ -1,41 +1,17 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
-import {
-  ArrowLeft,
-  Settings,
-  Users,
-  MessageSquare,
-  Dices,
-  Coins,
-  Send,
-  CheckCircle2,
-  BarChart3,
-  TrendingUp,
-} from 'lucide-react'
+import { ArrowLeft, Settings, Users, MessageSquare, Coins, BarChart3 } from 'lucide-react'
 import { GameBoard } from '@/components/ui/GameBoard'
 import { SettingsModal } from '@/components/ui/SettingsModal'
 import { HearthstoneSpinner } from '@/helper/HearthstoneSpinner'
 import sidesPath from '@/assets/sides.webp'
 import spinPath from '@/assets/spin.mp3'
-
-// --- 常量 ---
-type SymbolType = 'fish' | 'prawn' | 'crab' | 'rooster' | 'gourd' | 'coin'
-
-const SYMBOLS: { id: SymbolType; label: string; icon: string; multiplier: string; color: string }[] = [
-  { id: 'gourd', label: '宝葫芦', icon: '🍐', multiplier: '1:1', color: 'text-green-400' },
-  { id: 'fish', label: '咸鱼', icon: '🐟', multiplier: '1:1', color: 'text-red-400' },
-  { id: 'prawn', label: '皮皮虾', icon: '🦐', multiplier: '1:2', color: 'text-orange-400' },
-  { id: 'crab', label: '大闸蟹', icon: '🦀', multiplier: '1:5', color: 'text-emerald-400' },
-  { id: 'rooster', label: '铁公鸡', icon: '🐓', multiplier: '1:1', color: 'text-red-500' },
-  { id: 'coin', label: '金铜板', icon: '🪙', multiplier: '1:10', color: 'text-yellow-400' },
-]
-
-const MOCK_CHAT = [
-  { user: '韭菜_001', msg: '梭哈葫芦，输了下海', type: 'chat' },
-  { user: 'System', msg: '玩家 [慈善家] 重仓买入 🦀', type: 'system' },
-  { user: '赌神_HK', msg: '庄家这手气有点黑', type: 'chat' },
-]
+import { SYMBOL_TYPE } from '@/enum'
+import { Chat } from './component/Chat'
+import { ConsoleBoss } from './component/boss/Console'
+import { ConsolePlayer } from './component/player/Console'
+import { PlayerList } from './component/PlayerList'
 
 // --- 主页面 ---
 export function GamePage() {
@@ -43,18 +19,17 @@ export function GamePage() {
   const { roomId } = useParams()
   const gameController = HearthstoneSpinner.getInstance(roomId ?? '1', {
     column: 3,
-    sidesPath: sidesPath,
     sideNumber: 6,
+    sidesPath: sidesPath,
     audioPath: spinPath,
   })
   console.log('room id', roomId)
 
   // 状态管理
-  const [isDealer] = useState(true)
+  const [isDealer] = useState(false)
   const [activeTab, setActiveTab] = useState<'bet' | 'chat' | 'users'>('bet')
-  const [gameState, setGameState] = useState<'betting' | 'rolling' | 'result'>('betting')
-  const [diceResult, setDiceResult] = useState<SymbolType[] | null>(null)
-  const [bets, setBets] = useState<Record<string, number>>({})
+  const [gameState, setGameState] = useState<GameState>('betting')
+  const [diceResult, setDiceResult] = useState<SYMBOL_TYPE[] | null>(null)
 
   // 房间设置状态
   const [showSettings, setShowSettings] = useState(false)
@@ -64,9 +39,9 @@ export function GamePage() {
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   const pageTab = [
-    { id: 'bet', label: isDealer ? '市场监控' : '下注', icon: isDealer ? BarChart3 : Coins },
+    { id: 'bet', label: isDealer ? '监控' : '下注', icon: isDealer ? BarChart3 : Coins },
     { id: 'chat', label: '内幕', icon: MessageSquare },
-    { id: 'users', label: '名册', icon: Users },
+    { id: 'users', label: '农场', icon: Users },
   ] as const
 
   useEffect(() => {
@@ -76,27 +51,25 @@ export function GamePage() {
   }, [activeTab])
 
   // 游戏逻辑
-  const handleRoll = () => {
-    if (gameState !== 'betting') return
+  const handleRoll = async () => {
     setGameState('rolling')
     setDiceResult(null)
-    const targets = Array.from({ length: 3 }, () => Math.floor(Math.random() * 6))
-    gameController.runTo({
-      column: targets,
-      duration: 3000,
-    })
-    setTimeout(() => {
-      const result: SymbolType[] = []
-      for (let i = 0; i < 3; i++) result.push(SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)].id)
-      setDiceResult(result)
-      setGameState('result')
-      setTimeout(() => setGameState('betting'), 5000)
-    }, 2000)
-  }
+    const targets = Array.from({ length: 3 }, () => Math.floor(Math.random() * 6)) as SYMBOL_TYPE[]
 
-  const handleBet = (symbolId: string, amount: number) => {
-    if (gameState !== 'betting') return
-    setBets((prev) => ({ ...prev, [symbolId]: (prev[symbolId] || 0) + amount }))
+    // 等待动画完成
+    await gameController.runTo({
+      column: targets,
+      duration: 5000,
+    })
+
+    // 动画完成后显示结果
+    setDiceResult(targets)
+    setGameState('result')
+
+    // 3秒后可以再次开盘
+    setTimeout(() => {
+      setGameState('betting')
+    }, 3000)
   }
 
   const handleSaveSettings = (data: Partial<Room>) => {
@@ -188,82 +161,9 @@ export function GamePage() {
                   exit={{ opacity: 0, x: -20 }}
                   className="flex-1 overflow-y-auto p-4 space-y-4">
                   {isDealer ? (
-                    <div className="space-y-6">
-                      <button
-                        onClick={handleRoll}
-                        disabled={gameState !== 'betting'}
-                        className={`w-full py-6 rounded-xl font-black text-xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-xl ${
-                          gameState === 'betting'
-                            ? 'bg-linear-to-r from-red-600 to-orange-600 text-white shadow-red-900/30 hover:brightness-110'
-                            : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-white/5'
-                        }`}>
-                        <Dices size={24} className={gameState === 'rolling' ? 'animate-spin' : ''} />
-                        {gameState === 'betting' ? '开盘收割 (ROLL)' : '结算中...'}
-                      </button>
-                      <div className="space-y-3">
-                        <h3 className="text-xs text-slate-500 font-mono uppercase flex items-center gap-2">
-                          <TrendingUp size={14} /> Market Depth
-                        </h3>
-                        <div className="grid grid-cols-1 gap-2">
-                          {SYMBOLS.map((s) => (
-                            <div
-                              key={s.id}
-                              className="bg-slate-900/50 p-3 rounded-lg border border-white/5 flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <span className="text-xl">{s.icon}</span>
-                                <span className="text-sm font-bold text-slate-300">{s.label}</span>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-sm font-mono text-emerald-400 font-bold">¥ 8888</div>
-                                <div className="text-[10px] text-slate-600">Total Bets</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                    <ConsoleBoss onTap={handleRoll} state={gameState} />
                   ) : (
-                    <div className="space-y-2 pb-20">
-                      {SYMBOLS.map((s) => (
-                        <div
-                          key={s.id}
-                          className="flex items-center gap-3 bg-slate-900/50 p-3 rounded-xl border border-white/5 active:bg-slate-800 transition-colors group">
-                          <div className="w-10 h-10 flex items-center justify-center bg-slate-950 rounded-lg text-2xl border border-white/5 group-hover:border-emerald-500/30 transition-colors">
-                            {s.icon}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-bold text-slate-200">{s.label}</span>
-                              <span className="text-[10px] px-1.5 rounded bg-slate-800 text-slate-400">
-                                {s.multiplier}
-                              </span>
-                            </div>
-                            <div className="flex gap-2 mt-1.5">
-                              {[10, 50, 100].map((val) => (
-                                <button
-                                  key={val}
-                                  onClick={() => handleBet(s.id, val)}
-                                  className="text-[10px] text-slate-500 hover:text-white hover:bg-emerald-600 bg-slate-950 px-2 py-0.5 rounded border border-white/5 transition-colors">
-                                  +{val}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                          <input
-                            type="number"
-                            placeholder="0"
-                            value={bets[s.id] || ''}
-                            onChange={(e) => handleBet(s.id, parseInt(e.target.value) || 0)}
-                            className="w-20 bg-transparent border-b border-slate-700 py-1 text-right text-base font-mono text-emerald-400 focus:border-emerald-500 outline-none placeholder:text-slate-700 transition-colors"
-                          />
-                        </div>
-                      ))}
-                      <div className="pt-4">
-                        <button className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/20 active:scale-[0.98] flex items-center justify-center gap-2 transition-all">
-                          <CheckCircle2 size={18} /> 确认下注 (Invest)
-                        </button>
-                      </div>
-                    </div>
+                    <ConsolePlayer state={gameState} />
                   )}
                 </motion.div>
               )}
@@ -275,68 +175,15 @@ export function GamePage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="flex flex-col h-full absolute inset-0">
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                    {MOCK_CHAT.map((msg, i) => (
-                      <div
-                        key={i}
-                        className={`text-xs p-3 rounded-xl max-w-[85%] ${
-                          msg.type === 'system'
-                            ? 'bg-emerald-950/20 text-emerald-400 mx-auto w-full text-center border border-emerald-500/10'
-                            : msg.user.includes('我')
-                              ? 'bg-emerald-600 text-white ml-auto rounded-tr-none'
-                              : 'bg-slate-800 text-slate-300 mr-auto rounded-tl-none'
-                        }`}>
-                        {msg.type !== 'system' && (
-                          <span className="block font-bold text-[9px] opacity-50 mb-1">{msg.user}</span>
-                        )}
-                        {msg.msg}
-                      </div>
-                    ))}
-                    <div ref={chatEndRef} />
-                  </div>
-                  <div className="flex-none p-3 bg-slate-950/80 backdrop-blur border-t border-white/5">
-                    <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
-                      <input
-                        type="text"
-                        placeholder="Leak insider info (发布内幕)..."
-                        className="flex-1 bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600"
-                      />
-                      <button className="p-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-900/20 transition-colors">
-                        <Send size={18} />
-                      </button>
-                    </form>
-                  </div>
+                  className="absolute inset-0">
+                  <Chat />
                 </motion.div>
               )}
 
               {/* Tab C: Users */}
               {activeTab === 'users' && (
-                <motion.div
-                  key="users"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex-1 overflow-y-auto p-4 space-y-2">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-white/5 hover:bg-slate-800 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded bg-linear-to-br from-slate-700 to-slate-800 flex items-center justify-center text-xs font-bold text-slate-300 border border-white/5">
-                          {i}
-                        </div>
-                        <div>
-                          <div className="text-xs font-bold text-slate-300">韭菜_{i}号</div>
-                          <div className="text-[10px] text-slate-500">Total Bet: ¥{i * 100}</div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-950/30 text-emerald-500 border border-emerald-500/20">
-                          Online
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                <motion.div key="users" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 ">
+                  <PlayerList />
                 </motion.div>
               )}
             </AnimatePresence>

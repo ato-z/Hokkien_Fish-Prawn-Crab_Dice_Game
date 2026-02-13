@@ -17,3 +17,5 @@ declare type OnChoiceTap = {
   (type: 'both', input: [number, number]): void
   (type: 'set', input: [number, number, number]): void
 }
+
+declare type GameState = 'betting' | 'rolling' | 'result'

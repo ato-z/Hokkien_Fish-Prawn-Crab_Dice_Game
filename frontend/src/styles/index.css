@@ -53,6 +53,7 @@
 
   .branch-index {
     --position-y: 0;
+    position: relative;
     display: flex;
     aspect-ratio: 1/1;
     max-width: 100%;
@@ -61,20 +62,42 @@
     background-size: cover;
     background-repeat: no-repeat;
     background-position: 0 var(--position-y);
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
   }
   .branch-1 {
     --position-y: 20%;
+    &::after {
+      background-image: var(--animation-1);
+    }
   }
   .branch-2 {
     --position-y: 40%;
+    &::after {
+      background-image: var(--animation-2);
+    }
   }
   .branch-3 {
     --position-y: 60%;
+    &::after {
+      background-image: var(--animation-3);
+    }
   }
   .branch-4 {
     --position-y: 80%;
+    &::after {
+      background-image: var(--animation-4);
+    }
   }
   .branch-5 {
     --position-y: 100%;
+    &::after {
+      background-image: var(--animation-5);
+    }
   }
 }
