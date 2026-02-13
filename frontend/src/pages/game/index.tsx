@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Settings, Users, MessageSquare, Coins, BarChart3 } from 'lucide-react'
 import { SYMBOL_TYPE } from '@/enum'
 import { useAtom, useSetAtom } from 'jotai'
 import { gameControllerAtom, roomInfoAtom, roomStatusAtom, startRollAtom, withRoomIdAtom } from '@/store/game'
-import { bossAtom } from '@/store/player'
+import { bossAtom, pushBetAllAtom, pushBetSelfAtom } from '@/store/player'
 import { RoomTransition } from '@/components/ui/RoomTransition'
 import { GameBoard } from '@/components/ui/GameBoard'
 import { SettingsModal } from '@/components/ui/SettingsModal'
@@ -26,6 +26,9 @@ export function GamePage() {
   const withRoomId = useSetAtom(withRoomIdAtom)
   const startRoll = useSetAtom(startRollAtom)
 
+  const pushBetSelf = useSetAtom(pushBetSelfAtom)
+  const pushBetAll = useSetAtom(pushBetAllAtom)
+
   // 房间设置状态
   const [showSettings, setShowSettings] = useState(false)
 
@@ -41,10 +44,30 @@ export function GamePage() {
     startRoll({ duration: 6000, column: targets })
   }
 
+  // 房间设置
   const handleSaveSettings = (data: Partial<Room>) => {
     console.log('Saving Settings:', data)
     setShowSettings(false)
   }
+
+  // 点击下注和
+  const handleBetTap: OnChoiceTap = useCallback(
+    (key, indexs) => {
+      if (roomState === 'rolling') return void 0
+
+      const eq = indexs instanceof Array ? indexs.join('_') : indexs.toString()
+
+      pushBetSelf({
+        key,
+        eq,
+        notice: (key, eq, value) => {
+          console.log('在这里通知服务器...')
+          pushBetAll({ key, target: { eq, value } })
+        },
+      })
+    },
+    [roomState, pushBetSelf, pushBetAll]
+  )
 
   // 获取房号
   useEffect(() => {
@@ -98,7 +121,7 @@ export function GamePage() {
       <main className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-6 p-0 lg:p-6 max-w-400 mx-auto w-full relative z-0">
         {/* Left: Game Board */}
         <section className="lg:col-span-7 flex flex-col p-2 lg:p-0">
-          {gameController && <GameBoard gameController={gameController} isRolling={roomState === 'rolling'} />}
+          {gameController && <GameBoard gameController={gameController} onChoiceTap={handleBetTap} />}
         </section>
 
         {/* Right: Panel */}
@@ -131,7 +154,11 @@ export function GamePage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {isBoss ? <ConsoleBoss onTap={handleRoll} state={roomState} /> : <ConsolePlayer room={roomConfig} />}
+                  {isBoss ? (
+                    <ConsoleBoss onTap={handleRoll} state={roomState} />
+                  ) : (
+                    <ConsolePlayer room={roomConfig} onChoiceTap={handleBetTap} />
+                  )}
                 </motion.div>
               )}
 

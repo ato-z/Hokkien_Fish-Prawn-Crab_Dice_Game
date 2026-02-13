@@ -70,36 +70,34 @@ export const betAllAtom = atom<Bet>({
 /**
  * 为自己下注， 如果不存在则下注，反之取消
  */
-export const pushBetSelfAtom = atom(
-  null,
-  (get, set, input: { key: keyof Bet; target: BetStore; notice: BetNotice }) => {
-    const isBoss = get(bossAtom)
-    if (isBoss) return
+export const pushBetSelfAtom = atom(null, (get, set, input: { key: keyof Bet; eq: string; notice: BetNotice }) => {
+  const isBoss = get(bossAtom)
+  if (isBoss) return
 
-    const { key, target, notice } = input
-    const prevBet = get(betSelfAtom) // 获取当前快照用于逻辑判断
-    const list = prevBet[key]
-    const index = list.findIndex((current) => current.eq === target.eq)
+  const { key, eq, notice } = input
+  const value = get(playerJettonAtom)
+  const prevBet = get(betSelfAtom) // 获取当前快照用于逻辑判断
+  const list = prevBet[key]
+  const index = list.findIndex((current) => current.eq === eq)
 
-    // 1. 预先确定操作类型和最终通知的值
-    const isRemoving = index !== -1
-    const noticeValue = isRemoving ? -list[index].value : target.value
+  // 1. 预先确定操作类型和最终通知的值
+  const isRemoving = index !== -1
+  const noticeValue = isRemoving ? -list[index].value : value
 
-    // 2. 执行状态更新（保持纯净）
-    set(betSelfAtom, (prev) => {
-      const currentList = prev[key]
-      const nextList = isRemoving ? currentList.filter((item) => item.eq !== target.eq) : [...currentList, target]
+  // 2. 执行状态更新（保持纯净）
+  set(betSelfAtom, (prev) => {
+    const currentList = prev[key]
+    const nextList = isRemoving ? currentList.filter((item) => item.eq !== eq) : [...currentList, { eq, value }]
 
-      return { ...prev, [key]: nextList }
-    })
+    return { ...prev, [key]: nextList }
+  })
 
-    try {
-      notice(key, target.eq, noticeValue)
-    } catch (e) {
-      console.error('通知失败', e)
-    }
+  try {
+    notice(key, eq, noticeValue)
+  } catch (e) {
+    console.error('通知失败', e)
   }
-)
+})
 /**
  * 所有人的下注， 如果要取消 使用-value值
  */
