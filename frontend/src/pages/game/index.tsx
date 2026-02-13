@@ -152,8 +152,7 @@ export function GamePage() {
                   key="bet"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="flex-1 overflow-y-auto p-4 space-y-4">
+                  exit={{ opacity: 0, x: -20 }}>
                   {isBoss ? (
                     <ConsoleBoss onTap={handleRoll} state={roomState} />
                   ) : (
@@ -166,17 +165,20 @@ export function GamePage() {
               {activeTab === 'chat' && (
                 <motion.div
                   key="chat"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0">
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}>
                   <Chat />
                 </motion.div>
               )}
 
               {/* Tab C: Users */}
               {activeTab === 'users' && (
-                <motion.div key="users" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 ">
+                <motion.div
+                  key="users"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}>
                   <PlayerList />
                 </motion.div>
               )}
