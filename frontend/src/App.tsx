@@ -10,6 +10,7 @@ import { NotFoundPage } from '@/pages/404'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import { CreateRoomPage } from './pages/create-room'
 import { ProfilePage } from './pages/profile'
+import { EditRoomPage } from './pages/edit-room'
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
 
           <Route path="/lobby" element={<LobbyPage />} />
           <Route path="/create-room" element={<CreateRoomPage />} />
+          <Route path="/edit-room/:roomId" element={<EditRoomPage />} />
           <Route path="/profile" element={<ProfilePage />} />
 
           {/* 动态路由：游戏房间 */}

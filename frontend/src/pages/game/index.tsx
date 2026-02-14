@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Settings, Users, MessageSquare, Coins, BarChart3 } from 'lucide-react'
 import { SYMBOL_TYPE } from '@/enum'
 import { useAtom, useSetAtom } from 'jotai'
@@ -8,7 +8,6 @@ import { gameControllerAtom, roomInfoAtom, roomStatusAtom, startRollAtom, withRo
 import { bossAtom, pushBetAllAtom, pushBetSelfAtom } from '@/store/player'
 import { RoomTransition } from '@/components/ui/RoomTransition'
 import { GameBoard } from '@/components/ui/GameBoard'
-import { SettingsModal } from '@/components/ui/SettingsModal'
 import { Chat } from './component/Chat'
 import { ConsoleBoss } from './component/boss/Console'
 import { ConsolePlayer } from './component/player/Console'
@@ -29,9 +28,6 @@ export function GamePage() {
   const pushBetSelf = useSetAtom(pushBetSelfAtom)
   const pushBetAll = useSetAtom(pushBetAllAtom)
 
-  // 房间设置状态
-  const [showSettings, setShowSettings] = useState(false)
-
   const pageTab = [
     { id: 'bet', label: isBoss ? '监控' : '下注', icon: isBoss ? BarChart3 : Coins },
     { id: 'chat', label: '内幕', icon: MessageSquare },
@@ -42,12 +38,6 @@ export function GamePage() {
   const handleRoll = async () => {
     const targets = Array.from({ length: 3 }, () => Math.floor(Math.random() * 6)) as SYMBOL_TYPE[]
     startRoll({ duration: 6000, column: targets })
-  }
-
-  // 房间设置
-  const handleSaveSettings = (data: Partial<Room>) => {
-    console.log('Saving Settings:', data)
-    setShowSettings(false)
   }
 
   // 点击下注和
@@ -107,12 +97,11 @@ export function GamePage() {
             <div className="text-xs font-mono text-amber-400 font-bold">¥88,800</div>
           </div>
           {isBoss && (
-            <button
-              type="button"
-              onClick={() => setShowSettings(true)}
+            <Link
+              to={`/edit-room/${roomId}`}
               className="p-2 -mr-2 text-slate-500 hover:text-white hover:bg-slate-800 rounded-lg transition-all">
               <Settings size={20} />
-            </button>
+            </Link>
           )}
         </div>
       </header>
@@ -187,15 +176,6 @@ export function GamePage() {
           </div>
         </section>
       </main>
-
-      {/* 3. Settings Modal (Placed at Root Level) */}
-      <SettingsModal
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-        onSave={handleSaveSettings}
-        roomName={roomConfig.name}
-        isPrivate={false}
-      />
     </div>
   )
 }
