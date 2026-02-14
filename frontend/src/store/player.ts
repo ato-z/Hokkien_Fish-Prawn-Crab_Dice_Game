@@ -14,7 +14,7 @@ export const playerJettonAtom = atom(0)
 /**
  * 当前用户是否为房主
  */
-export const bossAtom = atom(false)
+export const bossAtom = atom(true)
 
 /**
  * 自己的下注

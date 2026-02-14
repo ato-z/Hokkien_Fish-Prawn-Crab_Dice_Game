@@ -47,13 +47,13 @@ export const ConsoleBoss = ({ state, onTap }: ConsoleBossProp) => {
       </div>
 
       {/* 市场深度列表 (复用逻辑) */}
-      <div className="flex-1 overflow-hidden flex flex-col bg-slate-950/30 border border-white/10 rounded-xl">
+      <div className="flex-1 flex flex-col bg-slate-950/30 border border-white/10 rounded-xl">
         <div className="flex items-center gap-2 p-3 border-b border-white/5 bg-slate-900/80">
           <TrendingUp size={14} className="text-slate-400" />
           <span className="text-xs font-bold text-slate-200">市场深度 (Market Depth)</span>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-slate-800">
+        <div className="flex-1 p-2">
           {/* 这里直接使用 Shared Render，不传 onDelete 即为只读模式 */}
           <BetListRenderer bets={betAll} />
         </div>
