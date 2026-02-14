@@ -80,7 +80,7 @@ export function GamePage() {
   if (roomConfig === null) return <RoomTransition />
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col overflow-hidden relative">
+    <div className="h-screen bg-slate-950 text-slate-200 font-sans flex flex-col overflow-hidden relative">
       {/* 1. Header */}
       <header className="flex-none sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-white/5 px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -117,16 +117,14 @@ export function GamePage() {
         </div>
       </header>
 
-      {/* 2. Main Layout (PC Grid / Mobile Col) */}
-      <main className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-6 p-0 lg:p-6 max-w-400 mx-auto w-full relative z-0">
-        {/* Left: Game Board */}
-        <section className="lg:col-span-7 flex flex-col p-2 lg:p-0">
+      {/* 2. Main Layout */}
+      <main className="flex-1 overflow-hidden flex flex-col lg:flex-row h-auto">
+        <section className="aspect-square w-full lg:h-full lg:w-auto">
           {gameController && <GameBoard gameController={gameController} onChoiceTap={handleBetTap} />}
         </section>
 
-        {/* Right: Panel */}
-        <section className="lg:col-span-5 flex flex-col bg-slate-900/0 lg:bg-slate-900/30 lg:border lg:border-white/5 lg:rounded-2xl overflow-hidden relative">
-          <div className="flex-none p-2 lg:p-4 pb-0">
+        <section className="flex-1 relative p-3 flex flex-col gap-3 lg:gap-4 overflow-hidden">
+          <div className="flex-none pb-0">
             <div className="flex p-1 bg-slate-900 rounded-lg border border-white/5 shadow-lg">
               {pageTab.map((tab) => (
                 <button
@@ -145,14 +143,15 @@ export function GamePage() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-hidden relative flex flex-col">
+          <div className="flex-1 overflow-y-scroll ">
             <AnimatePresence mode="wait">
               {activeTab === 'bet' && (
                 <motion.div
                   key="bet"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}>
+                  exit={{ opacity: 0, x: -20 }}
+                  className="h-full overflow-y-scroll relative">
                   {isBoss ? (
                     <ConsoleBoss onTap={handleRoll} state={roomState} />
                   ) : (
@@ -167,7 +166,8 @@ export function GamePage() {
                   key="chat"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}>
+                  exit={{ opacity: 0, x: -20 }}
+                  className="h-full overflow-y-scroll relative">
                   <Chat />
                 </motion.div>
               )}
@@ -178,7 +178,8 @@ export function GamePage() {
                   key="users"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}>
+                  exit={{ opacity: 0, x: -20 }}
+                  className="h-full overflow-y-scroll relative">
                   <PlayerList />
                 </motion.div>
               )}

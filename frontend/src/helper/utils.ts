@@ -63,3 +63,12 @@ export const eqTransform = (eq: string): GameElement[] => {
   const indices = eq.split('_').map(Number)
   return indices.map((index) => GAME_ELEMENT_MAP[index])
 }
+
+/**
+ * 获取下注类型的赔率
+ */
+export const getOdds = (elementsCount: number): number => {
+  if (elementsCount === 1) return 1
+  if (elementsCount === 2) return 4
+  return 6
+}

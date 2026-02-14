@@ -1,8 +1,8 @@
 export const PlayerList = () => {
   return (
-    <article className="p-4">
+    <article>
       <ul className="flex flex-col gap-2">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+        {new Array(20).fill(20).map((i) => (
           <li
             key={i}
             className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-white/5 hover:bg-slate-800 transition-colors">
